@@ -1,0 +1,59 @@
+{% extends "blog/base.html" %}
+
+{% block title %}{{post.title}}{% endblock %}
+
+{% block content %}
+  <h1>{{post.title}}</h1>
+  <p class="date">
+    Published {{post.publish}} by {{post.author}}
+  </p>
+{{post.body|linebreaks}}
+<p>
+  <!-- <a href="{% url 'blog:post_share' post.id %}"> -->
+  <a href="{{ post.get_absolute_url_for_urls_post_share }}">
+    Share this post
+  </a>
+</p>
+
+<h2>Similar posts</h2>
+{% for post1 in similar_posts %}
+  <p>
+    <a href="{{ post1.get_absolute_url_for_urls_post_details }}">{{ post1.title }}</a>
+  </p>
+{% empty %}
+  There are no similar posts yet.
+{% endfor %}
+
+{% with comments.count as total_comments %}
+<h2>
+  {{ total_comments }} comment{{ total_comments|pluralize }}
+</h2>
+{% endwith %}
+{% for comment in comments %}
+    <div class="comment">
+      <p class="info">
+        Comment {{ forloop.counter }} by {{ comment.name }}
+        {{ comment.created }}
+      </p>
+      {{ comment.body|linebreaks }}
+    </div>
+  {% empty %}
+    <p>There are no comments yet.</p>
+  {% endfor %}
+
+
+  
+  {% comment %}
+  <!-- {% include "blog/comment_form.html" %} -->
+  {% endcomment %}
+
+
+  <h2>Add a new comment</h2>
+<!-- <form action="{{ post.get_absolute_url_for_urls_post_comment }}" method="post"> -->
+  <form action="{% url 'blog:post_comment' post.id %}" method="post">
+    {{ form.as_p }}
+    {% csrf_token %}
+    <p><input type="submit" value="Add comment"></p>
+  </form>
+
+{% endblock %}

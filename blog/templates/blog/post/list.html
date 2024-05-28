@@ -1,0 +1,113 @@
+{% extends "blog/base.html" %}
+
+{% block title %}My Blog{% endblock %}
+
+{% block content %}
+<h1>My Blog</h1>
+
+{% if tag %}
+  <h2>Posts tagged with "{{ tag.name }}"</h2>
+{% endif %}
+
+{% for post in posts %}
+<h2>
+
+  {% comment %}
+  <!-- <a href="blog/{{ post.id }}"> -->
+  <!-- <a href="{% url 'blog:post_detail' post.id %}"> -->
+  {% endcomment %}
+
+  <a href="{{ post.get_absolute_url_for_urls_post_details }}">
+    {{ post.title }}
+  </a>
+</h2>
+<p class="tags">
+  Tags:
+  {% for tag in post.tags.all %}
+  <a href="{% url 'blog:post_list_by_tag' tag.slug %}">
+    {{ tag.name }}
+  </a>
+  {% if not forloop.last %}, {% endif %}
+  {% endfor %}
+</p>
+<p class="date">
+  Published {{ post.publish }} by {{ post.author }}
+</p>
+{{ post.body|truncatewords:30|linebreaks }}
+{% endfor %}
+
+
+<!-- Including the Pagination template in this template. -->
+{% include "blog/pagination.html" with page=posts %}
+
+
+
+<!--Or you can directly hardcode the whole Pagination Template in this template as well as follows -->
+{% comment %}
+{% with posts as page %}
+<!-- <div class="pagination">
+      <span class="step-links">
+        {% if page.has_previous %}
+        <a href="?page={{ .previous_page_number }}">Previous</a>
+        {% endif %}
+        <span class="current">
+          Page {{ page.number }} of {{ page.paginator.num_pages }}.
+        </span>
+        {% if page.has_next %}
+        <a href="?page={{ page.next_page_number }}">Next</a>
+        {% endif %}
+      </span>
+    </div> -->
+{% endwith %}
+{% endcomment %}
+
+<!-- Container for dropdowns to display them side by side -->
+<div style="display: flex; align-items: center; gap: 10px;">
+  <div>
+    <label for="post-dropdown">Select a Post:</label>
+    <select id="post-dropdown">
+      <option value="">-- Select a Post --</option>
+      {% for post in posts_list %}
+      <option value="{{ post.id }}">{{ post.title }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div>
+    <label id="comment-label" for="comment-dropdown">Comments:</label>
+    <select id="comment-dropdown">
+      <option value="">-- Select a Comment --</option>
+      <!-- This will be populated using JavaScript -->
+    </select>
+  </div>
+</div>
+<br>
+<br>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var postDropdown = document.getElementById('post-dropdown');
+    var commentDropdown = document.getElementById('comment-dropdown');
+  
+    postDropdown.addEventListener('change', function() {
+      var postId = this.value;
+      if (postId) {
+        fetch(`/blog/comments/${postId}/`)
+          .then(response => response.json())
+          .then(data => {
+            commentDropdown.innerHTML = '<option value="">-- Select a Comment --</option>';
+            data.forEach(comment => {
+              var option = document.createElement('option');
+              option.value = comment.id;
+              option.text = comment.body;
+              commentDropdown.appendChild(option);
+            });
+          });
+      } else {
+        commentDropdown.innerHTML = '<option value="">-- Select a Comment --</option>';
+      }
+    });
+  });
+  </script>
+  
+{% endblock %}

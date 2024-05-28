@@ -1,0 +1,24 @@
+{% extends "blog/base.html" %}
+
+{% block title %}Add a comment{% endblock %}
+
+{% block content %}
+{% if comment %}
+<h2>Your comment has been added.</h2>
+<p><a href="{{ post.get_absolute_url_for_urls_post_details }}">Back to the post</a></p>
+{% else %}
+
+{% comment %}
+<!-- {% include "blog/comment_form.html" %} -->
+{% endcomment %}
+
+<h2>Add a new comment</h2>
+<!-- <form action="{{ post.get_absolute_url_for_urls_post_comment }}" method="post"> -->
+<form action="{% url 'blog:post_comment' post.id %}" method="post">
+    {{ form.as_p }}
+    {% csrf_token %}
+    <p><input type="submit" value="Add comment"></p>
+</form>
+
+{% endif %}
+{% endblock %}
